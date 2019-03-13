@@ -23,9 +23,9 @@ class GeneticFS(object):
         fitnessFunc = a python function whose input is a single tuple.  the tuple passed
                     to this function will look like (i,X,otherData[0],otherdata[1], ...) 
                     where i is an index used for sorting the returned fitness score.
-                    The output should be a tuple that looks like (i, fitnessScore)
+                    The output should be a tuple that looks like (i, fitnessScore).
                     Your classification/regression model should be implemented here, but
-                    make sure to set any n_cores argument to 1 within these models.
+                    make sure to set any n_cores argument to 1 within this model.
         varNames = a numpy array containing the feature names as strings
         numFeats = the number of features the algorithm should optimize for
         popSize = the number of genotypes per genetion of the population.  larger sizes give 
