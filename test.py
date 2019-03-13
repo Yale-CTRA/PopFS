@@ -13,7 +13,7 @@ from sklearn.linear_model import LogisticRegression as LR
 from sklearn.metrics import roc_auc_score as AUC
 from sklearn.preprocessing import RobustScaler
 
-import GeneticFS
+from Genetic import GeneticFS
 
 
 def fitnessFunc(input_tuple):
