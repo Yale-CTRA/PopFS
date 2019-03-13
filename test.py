@@ -63,7 +63,7 @@ if __name__ == "__main__":
     
     ## set parameters
     numFeats = 10
-    num_iters = 100
+    numGenerations = 100
     popSize = 1000
     mutationRate = 0.05
     numClones = 2
@@ -82,7 +82,7 @@ if __name__ == "__main__":
                         numClones = numClones, mutationRate = mutationRate)
     
     ## produce generations
-    for i in range(num_iters):
+    for i in range(numGenerations):
         model.evolve() # next gen
         model.save(namePopulation) # checkpointing
     model.close()
