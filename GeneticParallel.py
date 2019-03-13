@@ -144,13 +144,14 @@ class GeneticFS(object):
                   '   |   Min: ', np.round(np.min(self.scores), 4))
         self.generation += 1
     
-    def getBest(self):
-        # returns the best fitness score in current population 
-        # and its associated feature set
-        m = np.max(self.scores)
-        idx = np.where(self.scores == m)[0][0]
-        return (m, self.varNames[self.population[idx]])
-    
+    def getBest(self, n = 1):
+        # returns the best fitness scores in current population 
+        # and their associated feature sets
+        assert n >= 1
+        if n == 1:
+            return (self.scores[0], self.varNames[self.population[0]])
+        else:
+            return [(self.scores[idx], self.varNames[self.population[idx]]) for idx in range(n)]
     
     def linearPMF(self, N):
         # rank-based linearly decreasing pmf (top ranked is x=0)
