@@ -12,11 +12,33 @@ import pickle
 import os
 
 
-class GeneticFeatureSelection(object):
+class GeneticFS(object):
     def __init__(self, fitnessFunc, X, otherData, varNames, numFeats = 10, popSize = 100, 
                              numClones = 1, mutationRate = 0.01, n_cores = 1, population = None,
                              verbose = True, folder = None):
-        
+        """
+        X = numpy ndarray containing the all the input feature data
+        otherData = a tuple containing any other relevant data to your fitnesss function 
+                    such as outputs to regress upon, censoring times for survival analysis, etc...
+        fitnessFunc = a python function whose input is a single tuple.  the tuple passed
+                    to this function will look like (i,X,otherData[0],otherdata[1], ...) 
+                    where i is an index used for sorting the returned fitness score.
+                    The output should be a tuple that looks like (i, fitnessScore)
+        varNames = a numpy array containing the feature names as strings
+        numFeats = the number of features the algorithm should optimize for
+        popSize = the number of genotypes per genetion of the population.  larger sizes give 
+                    more accurate results but increase the computational burden
+        numClones = number of individuals in each generation retained by elitism
+        mutationRate = the probability a feature flips to a random feature from the full set
+        verbose = boolean describing whether statistics should be printed each generation
+        n_cores = the number of cores the program can use to parallelize the search
+        population = either None, ndarray, or a string.  If None, the population is initialized 
+                    uniformly at random.  If a ndarray, this should be a previously found 
+                    population to resume the search.  If a string, the folder argument must
+                    be provided, and the string must specify the name of the pickled ndarray 
+                    (without extension) within the folder from where to continue searching.
+        folder = a folder in where a population can be saved or loaded from
+        """
         self.fitnessFunc = fitnessFunc
         self.X = X
         self.otherData = otherData if type(otherData) is tuple else (otherData,)
