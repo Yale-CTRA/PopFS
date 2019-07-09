@@ -276,10 +276,8 @@ class PBIL_chooseK(object):
         for i in range(self.popSize):
             record = self.scoreRecords[tuple(population[i])]
             record.append(scores[i])
-            ucb_score = statistics.mean(record)
-            #if len(record) > 1:
-            #    ucb_score += statistics.stdev(record)/math.sqrt(len(record))
-            scores[i] = ucb_score
+            score = statistics.mean(record)
+            scores[i] = score
         return scores
             
     def evolve(self, iters = 1, checkpointAt = None, freq = 5):
@@ -291,8 +289,8 @@ class PBIL_chooseK(object):
         for i in range(iters):
             population = self.newGeneration() # sample new population from distribution
             scores = self.evaluate(population) # loop through population and evaluate fitness scores
-            ucb_scores = self.updateRecords(population, scores)
-            self.updateDist(population, ucb_scores) # update underlying distribution
+            scores = self.updateRecords(population, scores)
+            self.updateDist(population, scores) # update underlying distribution
             self.generation += 1
             if checkpointAt is not None:
                 if (i+1) % freq == 0:
