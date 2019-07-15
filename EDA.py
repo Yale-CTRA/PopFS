@@ -7,6 +7,7 @@ Created on Tue May  7 14:26:48 2019
 
 
 import numpy as np
+import scipy as sci
 import multiprocessing
 import pickle
 from collections import defaultdict
@@ -172,6 +173,9 @@ class PBIL(object):
         self.loadProbs(loc)
         self.loadRecords(loc)
         
+        
+        
+
 
 class PBIL_chooseK(object):
     def __init__(self, fitnessFunc, X, otherData, varNames, K,
@@ -213,12 +217,32 @@ class PBIL_chooseK(object):
         self.scoreRecords = defaultdict(list)
         
         ## init with uniform or given probability
-        self.probabilities = np.ones(len(varNames))/len(varNames)
-            
+        if probabilities is None:
+          self.z = np.zeros(len(varNames))
+          self.z = self.to_zspace(self.z)
+        else:
+          self.z = sci.logit(self.fixShape(probabilities))
+          
         ## setup multicore stuff
         assert type(n_cores) is int and n_cores >= 1
         self.n_cores = n_cores
-            
+        
+    def to_zspace(self, arr):
+      arr_softmax = sci.softmax(arr)
+      arr_inverse_sigmoid  = sci.logit(arr_softmax)
+      return np.clip(arr_inverse_sigmoid, -10, 10)
+
+
+    def update_z(self, z, new_z):
+      z += self.lr*(new_z - z)
+      z = self.to_zspace(z)
+      return z
+
+    def g_to_zspace(self, arr):
+      norm_arr = arr/arr.sum()
+      inverse_sigmoid = sci.logit(norm_arr)
+      return np.clip(inverse_sigmoid, -10, 10)
+    
     def fixShape(self, probabilities):
         popErrMsg = "Provided population is not a numpy array"
         shapeErrMsg = "Provided population is wrong length"
@@ -270,14 +294,19 @@ class PBIL_chooseK(object):
         mod = (mod+1)/(np.sum(mod) + len(self.varNames)) # laplace smoothing
         
         # update using moving average and clip according to tolerance
-        self.probabilities = (1-self.lr)*self.probabilities + self.lr*mod
+        mod = self.g_to_zspace(mod)
+        self.z = self.update_z(self.z, mod)
+        
+        
         
     def updateRecords(self, population, scores):
         for i in range(self.popSize):
             record = self.scoreRecords[tuple(population[i])]
             record.append(scores[i])
-            score = statistics.mean(record)
-            scores[i] = score
+            ucb_score = statistics.mean(record)
+            #if len(record) > 1:
+            #    ucb_score += statistics.stdev(record)/math.sqrt(len(record))
+            scores[i] = ucb_score
         return scores
             
     def evolve(self, iters = 1, checkpointAt = None, freq = 5):
@@ -289,8 +318,8 @@ class PBIL_chooseK(object):
         for i in range(iters):
             population = self.newGeneration() # sample new population from distribution
             scores = self.evaluate(population) # loop through population and evaluate fitness scores
-            scores = self.updateRecords(population, scores)
-            self.updateDist(population, scores) # update underlying distribution
+            ucb_scores = self.updateRecords(population, scores)
+            self.updateDist(population, ucb_scores) # update underlying distribution
             self.generation += 1
             if checkpointAt is not None:
                 if (i+1) % freq == 0:
